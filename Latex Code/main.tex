@@ -1,0 +1,334 @@
+\documentclass[12pt,oneside,spanish]{article}
+\usepackage[T1]{fontenc}
+\usepackage{times}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper]{geometry}
+\usepackage{graphics}
+\geometry{verbose,tmargin=2cm,bmargin=2cm,lmargin=3.5cm,rmargin=2cm}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+\usepackage{color}
+\usepackage[spanish,es-tabla]{babel} % Tabla instead of Cuadro in spanish
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{psfrag}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subfigure}
+\usepackage{longtable}
+\usepackage{dcolumn}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage[unicode=true,linkbordercolor={1 1 1}]{hyperref}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+% References styles fo bibtex
+\usepackage[square,numbers]{natbib}
+\bibliographystyle{abbrvnat}
+
+% Chapter
+\usepackage{titlesec}
+%\titleformat{\chapter}[block]{\bfseries\scshape\Huge}{}{0pt}{\filcenter}[]
+\titleformat{\chapter}[block]{\bfseries\Huge}{}{0pt}{\filcenter}[]
+
+% Heading
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+%\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+%\renewcommand{\sectionmark}[1]{\markright{--- #1}}
+\fancyhf{}   %apaga tudo
+\fancyhead[C]{\scriptsize\scshape\nouppercase{\leftmark}}
+\fancyhead[R]{\oldstylenums\thepage}
+\renewcommand\headrulewidth{0pt}
+\fancypagestyle{plain}{
+	\fancyhead[R]{\bfseries{\oldstylenums\thepage}}
+	\fancyhead[C]{}}
+
+% Turn table
+\usepackage{fancybox}
+
+% Title page
+\title{ 
+	\includegraphics[width=0.35\textwidth]{unsa.eps}\\
+	\vspace{0.1cm}
+{\large Escuela Profesional de Ingeniería Electrónica \\
+\vspace{2cm}
+{\small Guía de Laboratorio de Tecnología de la Ingeniería Aeronáutica y Espacial}} \\ 
+\vspace{0.1pt} 
+\hrulefill \vspace{40pt} \\ 
+\textbf{Lab 03: Programación de Modulo Giroscopio y Acelerómetro MPU6050 con FreeRTOS en Microcontrolador STM32}\\ 
+\vspace{30pt} \hrulefill}
+\author{\scshape{\textbf{ }}
+\vspace{30pt} \\
+	\vspace{0.5cm}
+	{\small Alumnos}\\
+	{\Large Dolmos Becerra, Uriel Frankdali}\\
+	{\Large Pocohuanca Fernandez, Jeremin}\\
+	{\Large Torres Cori, Josue Breithner}\\
+	\vspace{3cm}\\
+{\small Profesor: Dr. Juan C. Cutipa Luque}\\
+\vspace{20pt}
+}
+\date{03 de agosto del 2021}
+
+\begin{document}
+
+\pagenumbering{gobble}
+
+\maketitle
+
+\newpage
+
+\begin{abstract}
+
+Este informe presenta el desarrollo del uso del  Módulo Acelerómetro y giroscopio MPU6050 con la placa de Desarrollo BluePill que lleva el Microcontrolador STM32F103C8T6 con Nucleo ARM Cortex M3 Usando un Sistema Operativo en Tiempo Real FreeRTOS. 
+
+\end{abstract}
+
+
+\pagebreak
+
+\tableofcontents
+%\listoffigures
+%\listoftables
+
+\newpage
+\pagenumbering{arabic}
+
+%  ---------------------- here goes your report -------------
+%
+\section{Objetivo}
+\begin{itemize}
+    \item Utilizar un sistema operativo de tiempo real kernel para un microcontrolador ARM
+
+    \item Entender la dinámica de los cuerpos rígidos y las tecnologías usadas en la ingeniería aeroespacial.
+
+\end{itemize}
+
+\section{Fundamento Teórico}
+\subsection{Modulo Desarrollo Stm32f103c8t6 Blue Pill Stm32 Cortex-m3}
+Ofrece una potencia, memoria flash, RAM, pines de entrada y salida, ADC, frecuencia de PWM, Resolución PWM mucho más avanzada que un Arduino.\\
+\subsubsection{Especificaciones:}
+\begin{itemize}
+    \item ARM 32-bit Cortex-M3 CPU Core
+    \item Corre a una frecuencia de 72 MHz (1.25 DMIPS/MHz)
+    \item 64 Kbytes de memoria Flash
+    \item 20 Kbytes de SRAM
+    \item RTC integrado y entrda de bateria de respaldo para el RTC, esto es un beneficio definitivamente ya que permite, por ejemplo, guardar datos con timestamp sin usar placas externas.
+    \item Modo Sleep, Stop y Standby
+    \item 26 entradas y salidas digitales, la mayoria tolerantes a 5V
+    \item Interrupciones en todas las I/O
+    \item 2 conversores A/D de 12-bit de 1 us, (10 entradas analogicas)
+    \item 7 temporizadores
+    \item 2 interfaces I2C
+    \item 3 interfaces USART
+    \item 2 interfaces SPI
+    \item Interface CAN
+    \item Micro USB para alimentacion de la placa y comunicaciones
+    \item Se puede debuguear con SWD (con ST-Link V2)
+    \item Dimensiones: 53 x 22 mm 
+\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{STM32CubeIDE/stm32.jpg}
+    \caption{Modulo Desarrollo Stm32f103c8t6 Blue Pill Stm32 Cortex-m3}
+    \end{figure}
+\subsection{Módulo Acelerómetro y giroscopio MPU6050}
+\subsubsection{Descripción}
+EL MPU6050 es una unidad de medición inercial o IMU (Inertial Measurment Units) de 6 grados de libertad (DoF) pues combina un acelerómetro de 3 ejes y un giroscopio de 3 ejes. Este sensor es muy utilizado en navegación, goniometría, estabilización, etc.
+EL módulo Acelerómetro MPU tiene un giroscopio de tres ejes con el que podemos medir velocidad angular y un acelerómetro también de 3 ejes con el que medimos los componentes X, Y y Z de la aceleración.
+
+La dirección de los ejes está indicado en el módulo el cual hay que tener en cuenta para no equivocarnos en el signo de las aceleraciones.
+\begin{figure}[H]
+    \centering
+    \includegraphics{STM32CubeIDE/giros.jpg}
+    \caption{Módulo Acelerómetro y giroscopio MPU6050}
+    \label{fig:my_label}
+\end{figure}
+\item 
+\subsection{FT232rl}
+\subsubsection{Descripción}
+Simple placa conversora de série a USB con el conocido chip FT232RL de FTD, junto con dos diodos led indicadores de actividad. Se puede utilizar para alimentar y programar directamente una placa Arduino Pro (ver productos relacionados) o cualquier otro dispositivo que tenga un puerto UART TTL. Éste es el nuevo modelo que viene por defecto configurado para 5V pero dispone de un jumper en la parte posterior y se puede utilizar para 3,3V cortando la pequeña pista y soldando un pequeño punto de estaño en la parte serigrafiada como 3,3V.
+\begin{figure}[H]
+    \centering
+    \includegraphics{STM32CubeIDE/ras.jpg}
+    \caption{Ft232rl Conversor Ftdi Usb Ttl 3.3v 5v}
+    \label{fig:my_label}
+\end{figure}
+t|\section{Materiales y Equipamientos}
+\begin{itemize}
+    \item Computador Laptop.
+    \item Placa Blue Pill
+    \item MPU6050
+    \item raspberry FT232rl.
+    \item interface STM32CubeIDE.
+\end{itemize}
+
+\section{Procedimientos}
+Los procedimientos de la experiencia de Laboratorio son:
+\begin{enumerate}
+\item Entorno de Desarrollo \\
+El entorno elegido para programar nuestro microcontrolador STM32 es STM32CubeIDE\footnote{Entorno de desarrollo de sistemas operativos múltiples que forma parte del ecosistema de software STM32Cube\url{https://www.st.com/en/development-tools/stm32cubeide.html}} 
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.3]{STM32CubeIDE/Home.jpeg}
+    \caption{Pantalla Principal del IDE}
+    \label{fig:my_label}
+\end{figure}
+\\
+Creamos un nuevo proyecto donde seleccionamos el microcontrolador STM32F103C8T6
+\newpage
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.3]{STM32CubeIDE/SelecMicro.jpeg}
+    \caption{Selección del microcontrolador a usar}
+    \label{fig:my_label}
+\end{figure}
+\\
+Configuramos las interfaces a utilizar y la frecuencia de reloj
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.4]{STM32CubeIDE/Configuracion.png}
+    \caption{Selección de Interfaces y puertos}
+    \label{fig:my_label}
+\end{figure}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.4]{STM32CubeIDE/Clock.png}
+    \caption{Configuración de Reloj}
+    \label{fig:my_label}
+\end{figure}
+\\
+Guardamos la configuración y abrimos el archivo "main.C" que fue creado
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.4]{STM32CubeIDE/Ccode.png}
+    \caption{Codigo de nuestro Proyecto}
+    \label{fig:my_label}
+\end{figure}
+Editamos el archivo main.c con el codigo necesario para hacer funcionar nuestro microcontrolador con el modulo acelerómetro y compilamos. Se generara un archivo binario que tendremos que flashear a nuestro microcontrolador
+\\
+\newpage
+En este caso Estamos usando unas librerías de MPU6050 para facilitar la comunicacion I2C y conseguir los datos de nuestro moduo giroscopio.
+\lstinputlisting[language=C, frame=single]{main.c}
+%%\newpage
+\item Flashear el programa del microcontrolador\\
+El STM32F103C8T6 se programa mediante ST-Link V2. Como no tenemos esta herramienta, tenemos que grabar el archivo binario mediante el Puerto USART1. En nuestro caso se ha presentado conflictos para flashear con el modulo FT232RL por lo que usamos el puerto UART de la RaspberryPi. Para ello Seguiremos la guia de la Siguiente Pagina \url{https://siliconjunction.wordpress.com/2017/03/21/flashing-the-stm32f-board-using-a-raspberry-pi-3/} donde instalamos la utilidad stm32flash y conectamos el microcontrolador al raspberry Pi de la siguiente manera:
+\begin{itemize}
+    \item Raspberry Pi 3.3V (pin 1) a STM32 3.3V
+    \item Raspberry Pi GND (pin 6) a STM32 GND
+    \item Raspberry Pi TX (pin 8) a STM32 RX (pin A10)
+    \item Raspberry Pi RX (pin 10) a STM32 TX (pin A9)
+    \item Establecemos el jumper STM32 BOOT0 en 1
+\end{itemize}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=1]{Flash/RP3_pinout.png}
+    \caption{Pin Out de la Raspberry Pi}
+    \label{fig:my_label}
+\end{figure}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.3]{Flash/Raspberry.jpeg}
+    \caption{Circuito en Protoboard}
+    \label{fig:my_label}
+\end{figure}
+Grabamos el binario, Establecemos el jumper STM32 BOOT0 en 0 y reiniciamos el microcontrolador para iniciar el programa.
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.4]{Flash/Stm32flash.png}
+    \caption{Herramienta Stm32flash corriendo en la Raspberry Pi}
+    \label{fig:my_label}
+\end{figure}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.4]{Flash/SerialMonitor.png}
+    \caption{Monitor Serie de Arduino Mostrando los valores del giroscopio}
+    \label{fig:my_label}
+\end{figure}
+\end{enumerate}
+\newpage
+
+\section{Conclusiones}
+\begin{itemize}
+    \item Se logro Utilizar el Microcontrolador STM32F103C8T6 con el Modulo MP6050
+    \item Un entorno de desarrollo como el STM32CubeiDE nos permite tener mas contro sobre nuestro microcontrolador
+    \item Los sistemas operativos en tiempo Real nos facilitan la gestion de diferentes actividades que programemos en nuestro microcontrolador
+\end{itemize}
+\section{Repositorio}
+\begin{itemize}
+    \item Github: 
+    \url{https://github.com/jtorrescor/Lab-03-STM32-MPU6050}.
+    \item OverLeaf: 
+    \url{https://es.overleaf.com/read/hfcvfkmzczkz}.
+\end{itemize}
+\bibliography{referencias}
+\begin{itemize}
+    \item Warren Gay, (2018). Beginning STM32, Developing with FreeRTOS, libopencm3 and GCC \url{https://oiipdf.com/download/1783}
+    \item Conectar modulo MPU6050 con STM32\\ 
+    \url{https://controllerstech.com/how-to-interface-mpu6050-gy-521-with-stm32/}.
+    \item Depuración de STM32 con Impresión en puerto Serie UART\\
+    \url{https://deepbluembedded.com/stm32-debugging-with-uart-serial-print/}.
+    \item Librerías STM32\\
+    \url{https://github.com/MYaqoobEmbedded/STM32-Tutorials}.
+\end{itemize}
+\appendix
+
+\newpage
+
+
+\newpage
+\addcontentsline{toc}{section}{Rúbrica} %
+\section*{Rúbrica}
+\begin{itemize}
+\item[e1:] Identifica y diagnostica problemas y los prioriza de acuerdo a su impacto o relevancia.
+\item[e2:] Formula soluciones coherentes y realizables usando normas y estándares apropiados.
+\item[e3:] Utiliza las técnicas y metodologías de la ingeniería electrónica para plantear, analizar y resolver problemas de ingeniería.
+\item[e4:] Maneja equipos e instrumentos y utiliza software especializado propio del ejercicio profesional.
+\end{itemize}
+La tabla \ref{tab:rubricas} refleja la evaluación del estudiante respecto este informe y mediante entrevistas. 
+
+\begin{table}[h!]
+\caption{Rúbrica según Resultados del Estudiante}
+\centering
+\begin{tabular}{lcccc}
+\hline 
+Alumno & e1 & e2 & e3 & e4\tabularnewline
+\hline 
+\hline 
+Dolmos Becerra, Uriel Frankdali &  &  &  & \tabularnewline
+\hline 
+Pocohuanca Fernandez, Jeremin &  &  &  & \tabularnewline
+\hline 
+Torres Cori, Josue Breithner &  &  &  & \tabularnewline
+\hline
+\end{tabular}
+\label{tab:rubricas}
+\end{table}
+\end{document}
